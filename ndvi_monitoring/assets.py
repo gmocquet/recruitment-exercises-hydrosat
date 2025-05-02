@@ -1,8 +1,13 @@
 from dagster import (
   asset,
+  AssetDep,
+  AssetSpec,
   DailyPartitionsDefinition,
   MultiPartitionsDefinition,
+  DimensionPartitionMapping,
   DynamicPartitionsDefinition,
+  MultiPartitionMapping,
+  TimeWindowPartitionMapping,
   Output,
   Definitions,
   AutoMaterializePolicy,
@@ -93,7 +98,25 @@ def fields(context, s3: S3Resource, settings: SettingsResource) -> List[Field]:
   return fields
 
 
-@asset(partitions_def=multi_partitions, auto_materialize_policy=AutoMaterializePolicy.eager())
+@asset(
+  partitions_def=multi_partitions,
+  auto_materialize_policy=AutoMaterializePolicy.eager(),
+  deps=[
+    fields,
+    bbox,
+    AssetDep(  # asset depend on the previous day's data (compute all field_id partitions for a given day)
+      AssetSpec("field_ndvi"),  # upstream asset
+      partition_mapping=MultiPartitionMapping(
+        {
+          "date": DimensionPartitionMapping(
+            dimension_name="date",
+            partition_mapping=TimeWindowPartitionMapping(start_offset=-1, end_offset=-1),
+          ),
+        }
+      ),
+    ),
+  ],
+)
 def field_ndvi(context, stac: STACResource, bbox: Bbox, fields: List[Field]) -> Output[Field]:
   """
   Compute the NDVI for a given field at a given date.
@@ -116,7 +139,7 @@ def field_ndvi(context, stac: STACResource, bbox: Bbox, fields: List[Field]) -> 
       },
     )
 
-  context.log.info(f"Compute NDVI for field {field_id} on date {date_str}")
+  context.log.info(f"Compute NDVI for field {field_id} (plant_date: {field.plant_date}, plant_type: {field.plant_type}) on date {date_str}")
 
   field_in_bbox = mapping(shape(field.geom).intersection(shape(bbox.geom)))
 

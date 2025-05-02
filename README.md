@@ -17,6 +17,7 @@ A scalable geospatial data pipeline powered by Dagster and Kubernetes, designed 
 - **Infrastructure as Code**: Reproducible deployments using Terraform.
 - **S3-Compatible Storage**: MinIO is used to simulate an S3 bucket locally, managed through Terraform.
 - **Late Data Handling**: Efficient mechanisms for reprocessing delayed fields without reprocessing the full dataset.
+- **Time-based Partition Dependencies**: Data computation for each partition depends on the previous day's partitions, enabling correct handling of time-series dependencies and incremental processing. For a given date, each fields partitions are processed simultaneously.
 
 ## 🧱 Software Design
 
@@ -235,7 +236,11 @@ To
 
 Perform a `backfill` of all partitions (`date` & `field_id`).
 
-![S3 processed](docs/assets/readme/img/dagster-field-ndvi-backfill.png)
+![Dagster field_ndvi backfill](docs/assets/readme/img/dagster-field-ndvi-backfill.png)
+
+Data are computed day by day - all fields are processed in parallel for a given date
+
+![Dagster field_ndvi backfill depends on past](docs/assets/readme/img/dagster-field-ndvi-backfill-depends-on-past.png)
 
 After a few minutes, fields NDVI are processed.
 
@@ -374,5 +379,10 @@ terraform import minio_s3_bucket.public_bucket hydrosat-pipeline-bucket-local-ma
 
 ## 🧹 Cleanup
 
-After you are done working with the project, you can clean up your environment by deleting the local resources
-using the `make clean` command. This helps in freeing up system resources and maintaining a clean development environment.
+After you are done working with the project, you can clean up your environment by deleting the local resources executing:
+
+```bash
+make clean
+```
+
+This helps in freeing up system resources and maintaining a clean development environment.
