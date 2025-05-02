@@ -1,0 +1,27 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Apply Fail Fast principle – raise exceptions immediately on error
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+Always apply the **Fail Fast** principle:
+
+- Detect invalid states, unexpected values, or errors **as early as possible**.
+- **Immediately throw a meaningful exception** without deferring or continuing execution with invalid data.
+- Never let invalid or missing data propagate through multiple layers of code.
+- Always validate method inputs and critical assumptions right after receiving them.
+- Avoid complex layers of null checks or defensive programming; trust your methods to either succeed cleanly or fail immediately.
+
+✅ Example:
+```python
+def get_order_by_id(order_id: int) -> Order:
+    order = repository.find(order_id)
+    if not order:
+        raise OrderNotFoundException(f"Order {order_id} not found")
+    return order
+```

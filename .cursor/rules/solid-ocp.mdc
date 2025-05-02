@@ -1,0 +1,55 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Respecter le principe OCP (Open/Closed Principle)
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+- Apply the OCP principle: classes should be **closed for modification** but **open for extension**.
+- Use **abstract base classes**, **protocols**, and **polymorphism** to allow future changes without modifying existing code.
+- Prefer **dependency injection** (DI) over direct instantiation of concrete classes.
+- Use the **Strategy or Decorator design pattern** to manage evolving behaviors.
+
+💡 Example (OCP Violation):
+```python
+# Bad
+class DiscountCalculator:
+    def calculate(self, customer_type):
+        if customer_type == 'student':
+            return 0.8
+        if customer_type == 'senior':
+            return 0.7
+        return 1.0
+```
+
+💡 Example (OCP Done Right):
+```python
+from abc import ABC, abstractmethod
+
+class DiscountStrategy(ABC):
+    @abstractmethod
+    def calculate(self) -> float:
+        pass
+
+class RegularDiscount(DiscountStrategy):
+    def calculate(self) -> float:
+        return 1.0
+
+class StudentDiscount(DiscountStrategy):
+    def calculate(self) -> float:
+        return 0.8
+
+class SeniorDiscount(DiscountStrategy):
+    def calculate(self) -> float:
+        return 0.7
+
+class DiscountCalculator:
+    def __init__(self, strategy: DiscountStrategy):
+        self.strategy = strategy
+
+    def calculate(self) -> float:
+        return self.strategy.calculate()

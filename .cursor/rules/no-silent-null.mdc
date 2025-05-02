@@ -1,0 +1,30 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Forbid returning null on failure – throw explicit exceptions instead
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+In case of a failure, **do not return `None` silently**.
+
+Instead, always **raise a meaningful exception** that explains the failure context.
+
+### ❌ Avoid:
+```python
+def find_user(user_id: int) -> Optional[User]:
+    # Not found
+    return None  # ❌ Silent failure
+```
+
+### ✅ Prefer:
+```python
+def find_user(user_id: int) -> User:
+    user = repository.get_by_id(user_id)
+    if not user:
+        raise UserNotFoundException(f"User with ID {user_id} was not found.")
+    return user
+```

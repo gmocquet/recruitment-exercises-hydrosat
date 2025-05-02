@@ -1,0 +1,52 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Appliquer le principe LSP (Liskov Substitution Principle)
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+- Apply the **Liskov Substitution Principle (LSP)**:
+  - Any child class must be able to be used **as a replacement for its parent class**, without side effects or modifying the expected behavior.
+  - Don't modify preconditions or postconditions in a subclass.
+  - Don't raise unexpected exceptions in an overridden method.
+  - Don't remove expected behavior in a subclass.
+  - Use Python's **type hints** to document expected behavior.
+
+💡 Example (LSP Violation):
+```python
+class Bird:
+    def fly(self):
+        # Flying implementation
+        pass
+
+class Ostrich(Bird):
+    def fly(self):
+        raise NotImplementedError("Ostriches can't fly")  # ❌ LSP violated
+```
+
+💡 Example (LSP Done Right):
+```python
+from abc import ABC, abstractmethod
+
+class Animal(ABC):
+    pass
+
+class FlyingAnimal(Animal):
+    @abstractmethod
+    def fly(self):
+        pass
+
+class NonFlyingAnimal(Animal):
+    pass
+
+class Eagle(FlyingAnimal):
+    def fly(self):
+        # Flying implementation
+        pass
+
+class Ostrich(NonFlyingAnimal):  # ✅ Doesn't promise to fly
+    pass

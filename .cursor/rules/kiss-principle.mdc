@@ -1,0 +1,31 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Appliquer le principe KISS (Keep It Simple, Stupid)
+globs: ["src/**/*.js", "src/**/*.ts", "src/**/*.py"]
+alwaysApply: true
+---
+
+Apply the **KISS (Keep It Simple, Stupid)** principle in all code generation and refactoring tasks.
+
+- Prefer **clear, readable, and concise code** over clever or over-engineered solutions.
+- Avoid unnecessary abstractions, complex inheritance, deep hierarchies, and premature generalization.
+- Minimize the number of moving parts.
+- Use native language features and standard patterns unless a more complex design is clearly justified.
+- Avoid overuse of design patterns where simpler procedural logic would suffice.
+- Follow the “You Aren’t Gonna Need It” mindset: do not build for hypothetical future cases.
+
+✅ Examples of simplicity:
+- Prefer composition over inheritance when it simplifies usage.
+- Avoid multiple layers of indirection unless essential.
+- Favor `foreach` over complex iterator patterns if not needed.
+
+🚫 Avoid:
+- Over-generalized abstractions (`BaseFoo`, `AbstractBar`, `*ManagerFactoryFactory`)
+- Deep DI graphs with multiple levels of delegation
+- Excessive configuration for trivial behavior
+
+💡 Design for clarity first. Optimization or flexibility can come later, if needed.

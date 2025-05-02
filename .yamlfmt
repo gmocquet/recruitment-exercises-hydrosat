@@ -1,0 +1,6 @@
+# Settings: https://github.com/google/yamlfmt/blob/main/docs/config-file.md
+
+formatter:
+  line_ending: lf
+  retain_line_breaks: true
+  scan_folded_as_literal: true

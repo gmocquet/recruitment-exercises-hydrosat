@@ -1,0 +1,44 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: >
+  Guide Cursor IDE to structure the project using Hexagonal Architecture (Ports and Adapters).
+  Enforce separation between domain logic, application services, infrastructure implementations, and adapters.
+globs: src/**/*.py
+alwaysApply: true
+---
+
+# Hexagonal Architecture Guidelines
+
+## Domain Layer (`src/domain/`)
+- Contains core business logic and domain entities.
+- Define interfaces (ports) that specify required behaviors without implementation details.
+- No dependencies on other layers.
+
+## Application Layer (`src/application/`)
+- Implements use cases and orchestrates domain logic.
+- Depends only on the domain layer.
+- Coordinates tasks by invoking domain interfaces.
+
+## Infrastructure Layer (`src/infrastructure/`)
+- Provides concrete implementations of the domain interfaces.
+- Includes external systems like databases, file systems, and third-party services.
+- Should not contain business logic.
+
+## Adapter Layer (`src/adapters/`)
+- Handles input/output mechanisms such as CLI, REST APIs, or message queues.
+- Translates external requests into application layer calls.
+- Should be thin and delegate processing to the application layer.
+
+## Configuration (`infra/`)
+- Contains configuration files and Infrastructure as Code (IaC) scripts.
+- Manages deployment settings, environment variables, and service configurations.
+
+## General Principles
+- Enforce strict separation of concerns between layers.
+- Use dependency inversion: higher-level modules should not depend on lower-level modules.
+- Facilitate testing by isolating domain logic from external dependencies.
+- Promote maintainability and scalability through clear boundaries.

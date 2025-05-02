@@ -1,0 +1,60 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Python project conventions – use `uv`, pyproject.toml, and hydrosat namespace
+globs: ["src/**/*.py", "pyproject.toml", ".python-version"]
+alwaysApply: true
+---
+
+# Python Project Conventions
+
+Follow the guidelines below to ensure all Python code, tooling, and import logic respects the expected project architecture and conventions.
+
+## 📦 Package and Dependency Management
+
+- Use [`uv`](mdc:https:/github.com/astral-sh/uv) as the **only** tool to manage Python packages and virtual environments.
+- Do **not** use `pip`, `pip-tools`, or any form of `requirements.txt`.
+- All dependencies must be defined inside `pyproject.toml` using **PEP 621 / PEP 508 syntax**.
+- Lockfiles must be maintained via `uv pip compile` or `uv venv`.
+
+## 🐍 Python Version Management
+
+- Python version must be determined from the **`.python-version`** file.
+- Never hardcode the Python version in shell scripts or CI files. Always rely on `.python-version`.
+
+## 🗂️ Project Structure
+
+- All source code lives inside the `src/` folder.
+- The Python package should follow the namespace pattern:
+  `src/hydrosat/<project_name>/...`
+
+Example:
+src/
+└── hydrosat/
+└── your_project/
+├── init.py
+├── service.py
+└── api/
+└── endpoints.py
+
+## 📥 Import Behavior
+
+- All imports must be **relative to the `hydrosat` namespace**, never referencing `src`.
+
+✅ Good:
+```python
+from hydrosat.myproject.service import MyService
+```
+
+❌ Bad:
+```python
+from src.hydrosat.myproject.service import MyService
+````
+
+## 🧪 Additional Guidelines
+	•	When configuring PYTHONPATH, always include the src directory (e.g., PYTHONPATH=src).
+	•	When writing CLI tools, always define them under hydrosat.cli or similar.
+	•	Code should be structured to support uv venv without any manual path hacking.

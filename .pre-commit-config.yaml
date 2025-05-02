@@ -1,0 +1,51 @@
+default_stages: [pre-commit]
+fail_fast: false
+default_language_version:
+  python: "python3.13"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-json
+      - id: check-merge-conflict
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        args:
+          - --assume-in-merge
+        stages: [pre-push]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: debug-statements
+      - id: end-of-file-fixer
+        # Override default [push, commit]
+        stages: [pre-commit]
+      - id: trailing-whitespace
+        # Override default [push, commit]
+        stages: [pre-commit]
+      - id: fix-encoding-pragma
+        args:
+          - --remove
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.11.7
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0 # Replace with your desired mypy version
+    hooks:
+      - id: mypy
+        args: ["--config-file=.mypy.ini"]
+        additional_dependencies: ["types-requests"]
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.16.0
+    hooks:
+      - id: yamlfmt
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.0
+    hooks:
+      - id: yamllint

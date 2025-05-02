@@ -1,0 +1,66 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Appliquer le principe ISP (Interface Segregation Principle)
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+- Apply the **Interface Segregation Principle (ISP)**:
+  - Prefer multiple **small and specific** interfaces over one large, general interface.
+  - No class should be forced to implement methods that it **doesn't actually use**.
+  - Use Python's **ABC (Abstract Base Class)** or **Protocol** from the typing module to define interfaces.
+  - This helps better respect **SRP** and **OCP**, and reduces coupling.
+
+💡 Example (ISP Violation):
+```python
+from abc import ABC, abstractmethod
+
+class Worker(ABC):
+    @abstractmethod
+    def work(self):
+        pass
+
+    @abstractmethod
+    def eat(self):
+        pass
+
+class Robot(Worker):
+    def work(self):
+        # Implementation works fine
+        pass
+
+    def eat(self):
+        raise NotImplementedError("Robots don't eat")  # ❌ ISP violated
+```
+
+💡 Example (ISP Done Right):
+```python
+from abc import ABC, abstractmethod
+
+class Workable(ABC):
+    @abstractmethod
+    def work(self):
+        pass
+
+class Eatable(ABC):
+    @abstractmethod
+    def eat(self):
+        pass
+
+class Human(Workable, Eatable):
+    def work(self):
+        # Implementation
+        pass
+
+    def eat(self):
+        # Implementation
+        pass
+
+class Robot(Workable):  # ✅ Only implements what it needs
+    def work(self):
+        # Implementation
+        pass

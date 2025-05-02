@@ -1,0 +1,35 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Appliquer le principe de Dependency Injection (DI)
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+- Consistently apply the **Dependency Injection** principle:
+  - **Never instantiate a dependency inside a class**.
+  - Prefer injection via the **constructor** (constructor injection).
+  - **Setter injection** is acceptable only if the dependency is optional.
+  - Use **abstract base classes** or **protocols** rather than concrete classes when possible.
+
+- This allows:
+  - Respecting the **dependency inversion (D)** principle of the SOLID model;
+  - Facilitating **unit testing** (injection of mocks or stubs);
+  - Decoupling application components.
+
+💡 Example (DI Violation):
+```python
+class UserService:
+    def __init__(self):
+        self.mailer = Mailer()  # ❌ direct instantiation
+```
+
+💡 Example (DI Done Right):
+```python
+class UserService:
+    def __init__(self, mailer):
+        self.mailer = mailer  # ✅ dependency injected
+```

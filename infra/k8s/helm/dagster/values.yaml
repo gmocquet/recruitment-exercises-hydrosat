@@ -1,0 +1,60 @@
+dagster-user-deployments:
+  deployments:
+    - name: "dagster-dags" # set to the name of your deployment
+      image:
+        repository: "dagster-app" # set to the name of your Docker image
+        # When a tag is not supplied, it will default as the Helm chart version.
+        tag: latest # set to the tag of your Docker image
+        # Only change this value if you are following the guide on your
+        # local machine. If you are pushing images to a registry,
+        # leave the value as Always
+        pullPolicy: Never
+      dagsterApiGrpcArgs:
+        - "--python-file"
+        - "/app/ndvi_monitoring/assets.py"
+      port: 3030
+      includeConfigInLaunchedRuns:
+        enabled: true
+      env: []
+      envConfigMaps:
+        - name: dagster-env
+          namespace: dagster
+      envSecrets: []
+      labels: {}
+      volumes: []
+      volumeMounts: []
+      initContainers: []
+      sidecarContainers: []
+      annotations: {}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      podSecurityContext: {}
+      securityContext: {}
+      resources: {}
+      # Override the default K8s scheduler
+      # schedulerName: ~
+
+      # Readiness probe detects when the pod is ready to serve requests.
+      # https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes
+      readinessProbe:
+        # Readiness probes are enabled by default.
+        enabled: true
+        # If `readinessProbe` has no `exec` field, then the following default will be used:
+        # exec:
+        #   command: ["dagster", "api", "grpc-health-check", "-p", "{{ $deployment.port }}"]
+        periodSeconds: 20
+        timeoutSeconds: 10
+        successThreshold: 1
+        # Allow roughly 300 seconds to start up by default
+        failureThreshold: 1
+      # As of 0.14.0, liveness probes are disabled by default. If you want to enable them, it's recommended to also
+      # enable startup probes.
+      livenessProbe: {}
+      startupProbe:
+        enabled: false
+      # Strategy to follow when replacing old pods with new pods. See:
+      # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+      deploymentStrategy: {}
+      service:
+        annotations: {}

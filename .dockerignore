@@ -1,0 +1,8 @@
+.venv/
+.cursor/
+tmp/
+.ruff_cache/
+**/.mypy_cache/
+**/.pytest_cache/
+.DS_Store
+**/terraform/**

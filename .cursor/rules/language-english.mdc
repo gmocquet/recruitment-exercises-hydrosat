@@ -1,0 +1,19 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Règle de langue par défaut – Anglais
+globs: ["**/*.md", "**/*.js", "**/*.ts", "**/*.json", "**/*.yaml", "**/*.yml", "**/*.py"]
+alwaysApply: true
+---
+
+All content, code comments, documentation, commit messages, variable names, and explanations should be written in **English**.
+
+- Do not use French or any other language.
+- All AI responses must be written in English, including:
+  - Generated docblocks and function/method comments
+  - Example content for placeholder text
+  - Explanations or justifications for decisions
+- If the input is in French, convert it automatically to English when responding.

@@ -1,0 +1,38 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: >
+  Guide Cursor IDE to structure data processing and storage using the Medallion Architecture (Bronze, Silver, Gold).
+  Enforce separation of data layers to incrementally improve data quality and facilitate data governance.
+globs: data/**/*.py
+alwaysApply: true
+---
+
+# Medallion Architecture Guidelines
+
+## Bronze Layer (`data/bronze/`)
+- Ingest raw data from various sources (e.g., APIs, files, databases).
+- Store data in its original format without transformations.
+- Append-only; maintain full history for auditability.
+- Minimal schema enforcement; focus on capturing data as-is.
+
+## Silver Layer (`data/silver/`)
+- Perform data cleaning, validation, and transformation.
+- Standardize schemas and handle missing or inconsistent data.
+- Join and enrich datasets to create a consolidated view.
+- Serve as the primary source for analytics and reporting.
+
+## Gold Layer (`data/gold/`)
+- Aggregate and summarize data for business consumption.
+- Implement business logic and metrics calculations.
+- Optimize data for performance and accessibility.
+- Provide data to dashboards, machine learning models, and external systems.
+
+## General Principles
+- Maintain clear separation between layers; avoid cross-layer dependencies.
+- Implement data lineage tracking to monitor data flow and transformations.
+- Use version control for data schemas and transformation logic.
+- Apply access controls appropriate to each data layer's sensitivity and usage.

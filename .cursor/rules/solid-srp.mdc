@@ -1,0 +1,51 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Respecter le principe SRP (Single Responsibility Principle)
+globs: ["src/**/*.py"]
+alwaysApply: true
+---
+
+- Apply the **Single Responsibility Principle**: each class, method, or module should have only **one clear responsibility**.
+- Avoid **catch-all classes** that combine multiple roles (e.g., business logic + persistence + validation).
+- If a method or class has **more than one reason to change**, it violates SRP.
+
+💡 Example (SRP Violation):
+```python
+class UserManager:
+    def create_user(self, data):
+        # Creation logic
+        pass
+
+    def validate_user(self, data):
+        # Validation logic
+        pass
+
+    def send_welcome_email(self, user):
+        # Email sending logic
+        pass
+```
+
+💡 Example (SRP Done Right):
+```python
+class UserCreator:
+    def __init__(self, validator, notifier):
+        self.validator = validator
+        self.notifier = notifier
+
+    def create_user(self, data):
+        # Only handles user creation
+        pass
+
+class UserValidator:
+    def validate(self, data):
+        # Only handles validation
+        pass
+
+class UserNotifier:
+    def send_welcome_email(self, user):
+        # Only handles notifications
+        pass
