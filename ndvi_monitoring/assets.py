@@ -1,8 +1,13 @@
 from dagster import (
   asset,
+  AssetDep,
+  AssetSpec,
   DailyPartitionsDefinition,
   MultiPartitionsDefinition,
+  DimensionPartitionMapping,
   DynamicPartitionsDefinition,
+  MultiPartitionMapping,
+  TimeWindowPartitionMapping,
   Output,
   Definitions,
   AutoMaterializePolicy,
@@ -54,46 +59,93 @@ def bbox(s3: S3Resource, settings: SettingsResource) -> Bbox:
 
 
 @asset
-def fields(context, s3: S3Resource, settings: SettingsResource) -> List[Field]:
+def fields(context, s3: S3Resource, settings: SettingsResource) -> Output[List[Field]]:
   """
   Load all fields from s3 bucket staticdata prefix.
   """
-  field_ids = set()
-  fields = []
+  existing_field_ids = set()
+  existing_fields = []
 
+  new_field_ids = set()
+  new_fields = []
+
+  # Get existing fields
+  for _, s3_content in yield_s3_files_staticdata_geojson(
+    context, s3, settings, AWS_S3_PIPELINE_STATICDATA_FIELDS_PROCESSED_KEY
+  ):
+    for field_id, field in yield_fields_staticdata_geojson(context, s3_content):
+      field_obj = Field(
+        id=field_id,
+        is_new=False,
+        plant_type=field["properties"]["plant-type"],
+        plant_date=field["properties"]["plant-date"],
+        geom=field["geometry"],
+      )
+      existing_fields.append(field_obj)
+      existing_field_ids.add(field_id)
+
+  # Process new fields
   for _, s3_content in yield_s3_files_staticdata_geojson(
     context, s3, settings, AWS_S3_PIPELINE_STATICDATA_FIELDS_PENDING_KEY
   ):
     for field_id, field in yield_fields_staticdata_geojson(context, s3_content):
       field_obj = Field(
         id=field_id,
+        is_new=True,
         plant_type=field["properties"]["plant-type"],
         plant_date=field["properties"]["plant-date"],
         geom=field["geometry"],
       )
-      fields.append(field_obj)
-      field_ids.add(field_id)
+      new_fields.append(field_obj)
+      new_field_ids.add(field_id)
 
-  if not field_ids:
-    context.log.warning("No field found")
-    return []
+  if new_field_ids:
+    move_s3_objects_between_prefixes(
+      context,
+      s3,
+      settings,
+      AWS_S3_PIPELINE_STATICDATA_FIELDS_PENDING_KEY,
+      AWS_S3_PIPELINE_STATICDATA_FIELDS_PROCESSED_KEY,
+    )
 
-  move_s3_objects_between_prefixes(
-    context,
-    s3,
-    settings,
-    AWS_S3_PIPELINE_STATICDATA_FIELDS_PENDING_KEY,
-    AWS_S3_PIPELINE_STATICDATA_FIELDS_PROCESSED_KEY,
+    instance = context.instance
+    instance.add_dynamic_partitions(partitions_def_name="field_id", partition_keys=list(new_field_ids))
+    context.log.info(f"✅ Added {len(new_field_ids)} dynamic partitions for field_id.")
+
+  # Merge existing and new fields
+  fields = existing_fields + new_fields
+
+  # Assuming they are not many fields, we can return them as a list
+  # It's to facilitate the PoC explanability
+  return Output(
+    fields,
+    metadata={
+      "field_ids": ", ".join(f.id for f in fields),
+      "existing_field_ids": ", ".join(existing_field_ids),
+      "new_field_ids": ", ".join(new_field_ids),
+    },
   )
 
-  instance = context.instance
-  instance.add_dynamic_partitions(partitions_def_name="field_id", partition_keys=list(field_ids))
-  context.log.info(f"✅ Added {len(field_ids)} dynamic partitions for field_id.")
 
-  return fields
-
-
-@asset(partitions_def=multi_partitions, auto_materialize_policy=AutoMaterializePolicy.eager())
+@asset(
+  partitions_def=multi_partitions,
+  auto_materialize_policy=AutoMaterializePolicy.eager(),
+  deps=[
+    fields,
+    bbox,
+    AssetDep(  # asset depend on the previous day's data (compute all field_id partitions for a given day)
+      AssetSpec("field_ndvi"),  # upstream asset
+      partition_mapping=MultiPartitionMapping(
+        {
+          "date": DimensionPartitionMapping(
+            dimension_name="date",
+            partition_mapping=TimeWindowPartitionMapping(start_offset=-1, end_offset=-1),
+          ),
+        }
+      ),
+    ),
+  ],
+)
 def field_ndvi(context, stac: STACResource, bbox: Bbox, fields: List[Field]) -> Output[Field]:
   """
   Compute the NDVI for a given field at a given date.
@@ -104,6 +156,17 @@ def field_ndvi(context, stac: STACResource, bbox: Bbox, fields: List[Field]) -> 
 
   if field is None:
     raise ValueError(f"Field {field_id} not found")
+
+  if not field.is_new:
+    context.log.info(f"Field {field_id} is not new. Skipping NDVI re-computation.")
+    return Output(
+      field,
+      metadata={
+        "success": True,
+        "error": None,
+        "ndvi_computed": field.ndvi is not None,
+      },
+    )
 
   if date_str < field.plant_date:
     context.log.info(f"Field {field_id} not planted yet on {date_str}. Skipping NDVI computation.")
@@ -116,7 +179,9 @@ def field_ndvi(context, stac: STACResource, bbox: Bbox, fields: List[Field]) -> 
       },
     )
 
-  context.log.info(f"Compute NDVI for field {field_id} on date {date_str}")
+  context.log.info(
+    f"Compute NDVI for field {field_id} (plant_date: {field.plant_date}, plant_type: {field.plant_type}) on date {date_str}"
+  )
 
   field_in_bbox = mapping(shape(field.geom).intersection(shape(bbox.geom)))
 
