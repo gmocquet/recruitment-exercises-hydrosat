@@ -288,6 +288,17 @@ Perform a `backfill` selecting only the 2 new fields for all dates.
 
 ![Dagster field NDVI backfill late fields](docs/assets/readme/img/dagster-field-ndvi-backfill-late-fields.png)
 
+> ℹ️ **Note about the `backfill`**
+>
+> Thank to improvements of the `fields` and `field_ndvi` assets, you can now sellect all date and partitions.
+> The `field_nbdi` will skip already processed assets.
+
+![Dagster field NDVI backfill late fields](docs/assets/readme/img/dagster-field-ndvi-backfill-new-partitions-skip.png)
+
+After few minutes, all assets are processed without recompute thoses already compute in the past.
+
+![Dagster field NDVI backfill late fields](docs/assets/readme/img/dagster-field-ndvi-backfill-new-partitions-recomputation.png)
+
 ## ☸️ Setup Local Managed Containers through Kubernetes Cluster
 
 Follow the [📦 Getting Started](#-getting-started)
