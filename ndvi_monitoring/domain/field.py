@@ -25,6 +25,7 @@ class NDVI(BaseModel):
 
 class Field(BaseModel):
   id: str = PydanticField(..., description="ID of the field")
+  is_new: bool = PydanticField(default=False, description="Whether the field is new")
   plant_type: str = PydanticField(..., description="Type of plant")
   plant_date: str = PydanticField(..., description="Date of planting")
   geom: dict = PydanticField(..., description="GeoJSON representation of the geometry")
